@@ -3,20 +3,21 @@ import csv #csv reading
 import argparse #Command line parsing
 import sys
 
+
 headerrows = 1
 
 def date(value):
 	if value:
-		print 'D'+str.strip(value)
+		args.outfile.write('D'+str.strip(value)+'\n')
 
 
 def security_desc(value):
 	if value:
-		print 'M'+str.strip(value) 
+		args.outfile.write('M'+str.strip(value)+'\n')
 
 def amount(value):
 	if value:
-		print 'T'+str.strip(value) 
+		args.outfile.write('T'+str.strip(value)+'\n' )
 
 
 fields = {0 : date,
@@ -27,17 +28,19 @@ fields = {0 : date,
 
 #Parse input commands
 #defines infile and outfile for reading and writing respectively
-acct_type = ''
+
+acct_choices =["Bank","Cash","CCard","Invst"]
 parser = argparse.ArgumentParser(description = "Converts Fidelity .csv input files to Quicken .qif format")
 parser.add_argument('infile', help = 'Input file name')
-#parser.add_argument('outfile', nargs='?', type = argparse.FileType('w'), default = sys.stdout)
-parser.add_argument('outfile', help = 'Output file name')
-parser.add_argument('-t', dest= acct_type, nargs = '1', required = True, help = 'Account type descriptor', choices=('Bank','Cash','CCard','Invst'))
+parser.add_argument('outfile', nargs='?', type = argparse.FileType('w'), default = sys.stdout)
+#parser.add_argument('outfile', help = 'Output file name')
+parser.add_argument('-t', required = True,nargs='?', choices=acct_choices, help='Type of account designator.  Valid inputs are: '+','.join(acct_choices))
 args = parser.parse_args()
 
+outfile = args.outfile
 reader = csv.reader(open(args.infile,"rb"), delimiter=',', lineterminator='\r\n')
 
-valid_rows = [];
+valid_rows = []
 
 #Build a list of valid rows
 for row in reader:
@@ -45,7 +48,7 @@ for row in reader:
 		valid_rows.append(row)
 
 #Define the account type
-print '!Type:'+acct_type
+args.outfile.write('!Type:'+ args.t+'\n')
 
 #Parse the CSV	
 for index,row in enumerate(valid_rows):
@@ -63,5 +66,5 @@ for index,row in enumerate(valid_rows):
 			pass
 		
 	#print the record separator between records
-	print '^'
-		
+	args.outfile.write('^'+'\n')
+ 
